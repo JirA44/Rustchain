@@ -1,3 +1,13 @@
+## Français
+
+Projet DePIN visant à valoriser du matériel ancien via une blockchain et des mécanismes de preuve de matériel. Exemple : étudier le client et les composants du réseau ; les récompenses et preuves dépendent des règles du protocole.
+
+## English
+
+A DePIN project seeking to reward vintage hardware through a blockchain and hardware-proof mechanisms. Example: study the client and network components; rewards and proofs depend on protocol rules.
+
+---
+
 <div align="center">
 
 # RustChain
