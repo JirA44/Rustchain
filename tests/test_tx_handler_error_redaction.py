@@ -4,6 +4,8 @@
 Regression tests for transaction API internal error redaction.
 """
 
+import unittest
+
 from flask import Flask
 
 from node.rustchain_tx_handler import create_tx_api_routes
