@@ -10,6 +10,7 @@ from node.rustchain_tx_handler import create_tx_api_routes
 
 
 LEAKY_ERROR = "no such table: pending_transactions at /srv/rustchain/prod.db"
+ADMIN_KEY = "test-admin-key"
 
 
 class ExplodingPool:
@@ -40,38 +41,40 @@ class ExplodingPool:
         self._boom()
 
 
-def _client_for_exploding_pool():
+def _client_for_exploding_pool(monkeypatch):
+    monkeypatch.setenv("RC_ADMIN_KEY", ADMIN_KEY)
     app = Flask(__name__)
     app.config["TESTING"] = True
     create_tx_api_routes(app, ExplodingPool())
     return app.test_client()
 
 
-def _assert_redacted(response):
+def _assert_redacted(client, path):
+    response = client.get(path, headers={"X-Admin-Key": ADMIN_KEY})
     assert response.status_code == 500
     assert response.get_json() == {"error": "internal_error"}
     assert b"pending_transactions" not in response.data
     assert b"/srv/rustchain/prod.db" not in response.data
 
 
-def test_tx_status_redacts_internal_exception_details():
-    with _client_for_exploding_pool() as client:
-        _assert_redacted(client.get("/tx/status/hash_1"))
+def test_tx_status_redacts_internal_exception_details(monkeypatch):
+    with _client_for_exploding_pool(monkeypatch) as client:
+        _assert_redacted(client, "/tx/status/hash_1")
 
 
-def test_tx_pending_redacts_internal_exception_details():
-    with _client_for_exploding_pool() as client:
-        _assert_redacted(client.get("/tx/pending"))
+def test_tx_pending_redacts_internal_exception_details(monkeypatch):
+    with _client_for_exploding_pool(monkeypatch) as client:
+        _assert_redacted(client, "/tx/pending")
 
 
-def test_wallet_balance_redacts_internal_exception_details():
-    with _client_for_exploding_pool() as client:
-        _assert_redacted(client.get("/wallet/alice/balance"))
+def test_wallet_balance_redacts_internal_exception_details(monkeypatch):
+    with _client_for_exploding_pool(monkeypatch) as client:
+        _assert_redacted(client, "/wallet/alice/balance")
 
 
-def test_wallet_nonce_redacts_internal_exception_details():
-    with _client_for_exploding_pool() as client:
-        _assert_redacted(client.get("/wallet/alice/nonce"))
+def test_wallet_nonce_redacts_internal_exception_details(monkeypatch):
+    with _client_for_exploding_pool(monkeypatch) as client:
+        _assert_redacted(client, "/wallet/alice/nonce")
 
 
 def test_wallet_history_redacts_internal_exception_details(monkeypatch):
@@ -82,5 +85,9 @@ def test_wallet_history_redacts_internal_exception_details(monkeypatch):
 
     monkeypatch.setattr(tx_handler.sqlite3, "connect", raise_connect_error)
 
-    with _client_for_exploding_pool() as client:
-        _assert_redacted(client.get("/wallet/alice/history"))
+    with _client_for_exploding_pool(monkeypatch) as client:
+        _assert_redacted(client, "/wallet/alice/history")
+
+
+if __name__ == "__main__":
+    unittest.main()
