@@ -40,7 +40,7 @@ def _vote_payload(proposal_id: int, wallet: str, vote: str, nonce: str):
 def test_governance_propose_requires_gt_10_rtc_balance(monkeypatch):
     with _temporary_directory() as td:
         db_path = str(Path(td) / "gov.db")
-        monkeypatch.setattr(integrated_node._mod, "DB_PATH", db_path)
+        monkeypatch.setattr(integrated_node, "DB_PATH", db_path)
         integrated_node.app.config["DB_PATH"] = db_path
         integrated_node.init_db()
 
@@ -63,7 +63,7 @@ def test_governance_propose_requires_gt_10_rtc_balance(monkeypatch):
             "public_key": public_key,
         }
         with integrated_node.app.test_client() as client, patch.object(
-            integrated_node._mod, "verify_rtc_signature", return_value=True
+            integrated_node, "verify_rtc_signature", return_value=True
         ):
             resp = client.post("/governance/propose", json=payload)
         assert resp.status_code == 403
@@ -111,7 +111,7 @@ def test_governance_vote_rejects_invalid_proposal_id():
 def test_governance_vote_flow_and_lifecycle_finalization(monkeypatch):
     with _temporary_directory() as td:
         db_path = str(Path(td) / "gov.db")
-        monkeypatch.setattr(integrated_node._mod, "DB_PATH", db_path)
+        monkeypatch.setattr(integrated_node, "DB_PATH", db_path)
         integrated_node.app.config["DB_PATH"] = db_path
         integrated_node.init_db()
 
@@ -155,14 +155,14 @@ def test_governance_vote_flow_and_lifecycle_finalization(monkeypatch):
                 "public_key": pub_hex,
                 "signature": "ab" * 64,
             }
-            with patch.object(integrated_node._mod, "verify_rtc_signature", return_value=True):
+            with patch.object(integrated_node, "verify_rtc_signature", return_value=True):
                 r1 = client.post("/governance/propose", json=proposal_payload)
             assert r1.status_code == 201
             proposal_id = r1.get_json()["proposal"]["id"]
 
             # Signed YES vote (signature verification function is mocked)
             payload = _vote_payload(proposal_id, wallet, "yes", "n-1")
-            with patch.object(integrated_node._mod, "verify_rtc_signature", return_value=True):
+            with patch.object(integrated_node, "verify_rtc_signature", return_value=True):
                 r2 = client.post(
                     "/governance/vote",
                     json={
