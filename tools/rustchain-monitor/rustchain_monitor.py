@@ -106,7 +106,7 @@ def print_miners(data):
         print(f"❌ Failed to fetch miners: {data['error']}")
         return
     miners = normalize_miners_payload(data)
-    if miners is None:
+    if not isinstance(miners, list):
         print(f"⚠ Unexpected response: {data}")
         return
     print(f"📊 Active miners: {len(miners)}")
