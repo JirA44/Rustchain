@@ -349,7 +349,9 @@ def test_gpu_protocol_attest_fails_closed_without_admin_key(tmp_path, monkeypatc
     assert response.status_code == 503
     assert response.get_json() == {"error": "RC_ADMIN_KEY not configured"}
     monkeypatch.setenv("RC_ADMIN_KEY", "test-admin-key")
-        nodes = client.get("/gpu/nodes", headers={"X-Admin-Key": "test-admin-key"}).get_json()
+    nodes = client.get(
+        "/gpu/nodes", headers={"X-Admin-Key": "test-admin-key"}
+    ).get_json()
     assert nodes["count"] == 0
 
 
