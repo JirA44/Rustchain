@@ -802,25 +802,33 @@ class TestLockLedgerRoutes:
                 (lock_id, miner_id, 5 * 1000000, "bridge_deposit", now - 3600, now + 3600, "locked", now - 3600),
             )
 
-    def test_miner_locks_rejects_malformed_limit(self, setup_test_db, funded_miner):
+    def test_miner_locks_rejects_malformed_limit(self, setup_test_db, funded_miner, monkeypatch):
         lock_ledger = setup_test_db["lock_ledger"]
         client = self._client(lock_ledger, setup_test_db["db_path"])
+        monkeypatch.setenv("RC_ADMIN_KEY", "expected-admin")
 
-        response = client.get(f"/api/lock/miner/{funded_miner}?limit=abc")
+        response = client.get(
+            f"/api/lock/miner/{funded_miner}?limit=abc",
+            headers={"X-Admin-Key": "expected-admin"},
+        )
 
         assert response.status_code == 400
         assert response.get_json() == {"error": "limit must be an integer"}
 
-    def test_pending_unlock_rejects_malformed_before(self, setup_test_db):
+    def test_pending_unlock_rejects_malformed_before(self, setup_test_db, monkeypatch):
         lock_ledger = setup_test_db["lock_ledger"]
         client = self._client(lock_ledger, setup_test_db["db_path"])
+        monkeypatch.setenv("RC_ADMIN_KEY", "expected-admin")
 
-        response = client.get("/api/lock/pending-unlock?before=not-a-timestamp")
+        response = client.get(
+            "/api/lock/pending-unlock?before=not-a-timestamp",
+            headers={"X-Admin-Key": "expected-admin"},
+        )
 
         assert response.status_code == 400
         assert response.get_json() == {"error": "before must be an integer"}
 
-    def test_pending_unlock_route_calls_database_helper(self, setup_test_db, funded_miner):
+    def test_pending_unlock_route_calls_database_helper(self, setup_test_db, funded_miner, monkeypatch):
         lock_ledger = setup_test_db["lock_ledger"]
         db_path = setup_test_db["db_path"]
         now = int(time.time())
@@ -841,8 +849,12 @@ class TestLockLedgerRoutes:
             )
 
         client = self._client(lock_ledger, db_path)
+        monkeypatch.setenv("RC_ADMIN_KEY", "expected-admin")
 
-        response = client.get("/api/lock/pending-unlock?limit=10")
+        response = client.get(
+            "/api/lock/pending-unlock?limit=10",
+            headers={"X-Admin-Key": "expected-admin"},
+        )
 
         assert response.status_code == 200
         body = response.get_json()
@@ -850,7 +862,7 @@ class TestLockLedgerRoutes:
         assert body["count"] == 1
         assert body["locks"][0]["miner_id"] == funded_miner
 
-    def test_pending_unlock_before_zero_applies_cutoff(self, setup_test_db, funded_miner):
+    def test_pending_unlock_before_zero_applies_cutoff(self, setup_test_db, funded_miner, monkeypatch):
         lock_ledger = setup_test_db["lock_ledger"]
         db_path = setup_test_db["db_path"]
         now = int(time.time())
@@ -871,8 +883,12 @@ class TestLockLedgerRoutes:
             )
 
         client = self._client(lock_ledger, db_path)
+        monkeypatch.setenv("RC_ADMIN_KEY", "expected-admin")
 
-        response = client.get("/api/lock/pending-unlock?before=0&limit=10")
+        response = client.get(
+            "/api/lock/pending-unlock?before=0&limit=10",
+            headers={"X-Admin-Key": "expected-admin"},
+        )
 
         assert response.status_code == 200
         body = response.get_json()
