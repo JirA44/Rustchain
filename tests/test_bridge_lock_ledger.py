@@ -166,11 +166,11 @@ def funded_miner(setup_test_db):
     conn = sqlite3.connect(setup_test_db['db_path'])
     conn.execute(
         "INSERT INTO balances (miner_id, amount_i64) VALUES (?, ?)",
-        ("RTC_test_miner", 100 * 1000000)  # 100 RTC
+        ("RTC" + "a" * 40, 100 * 1000000)  # 100 RTC
     )
     conn.commit()
     conn.close()
-    return "RTC_test_miner"
+    return "RTC" + "a" * 40
 
 
 def assert_generic_database_error(result):
@@ -315,7 +315,7 @@ class TestAddressValidation:
     def test_valid_rustchain_address(self, setup_test_db):
         """Test valid RustChain address."""
         bridge_api = setup_test_db["bridge_api"]
-        valid, msg = bridge_api.validate_chain_address_format("rustchain", "RTC_test123abc")
+        valid, msg = bridge_api.validate_chain_address_format("rustchain", "RTC" + "a" * 40)
         assert valid is True
     
     def test_invalid_rustchain_address_prefix(self, setup_test_db):
