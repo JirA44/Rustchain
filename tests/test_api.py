@@ -74,14 +74,14 @@ def test_api_miners_requires_auth(client):
         mock_conn.row_factory = _sqlite3.Row
         mock_cursor = mock_conn.cursor.return_value
 
-        # The endpoint calls c.execute() twice:
-        #   1. SELECT COUNT(*) ... -> fetchone() -> [0]
-        #   2. SELECT ... FROM miner_attest_recent ... -> fetchall() -> []
+        # The endpoint uses two cursor queries and a separate epoch-enrollment
+        # query through sqlite3.connect().execute().
         count_result = MagicMock()
         count_result.fetchone.return_value = [0]
         rows_result = MagicMock()
         rows_result.fetchall.return_value = []
         mock_cursor.execute.side_effect = [count_result, rows_result]
+        mock_connect.return_value.execute.return_value.fetchone.return_value = [0]
 
         response = client.get('/api/miners')
         assert response.status_code == 200
