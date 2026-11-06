@@ -314,6 +314,17 @@ RustChain欢迎所有形式的贡献：
 
 查看 [赏金仓库](https://github.com/Scottcjn/rustchain-bounties/issues) 了解当前开放的任务。
 
+## BoTTube Premium API 主机
+
+Premium 视频与分析接口部署在 BoTTube 主机，不使用 RustChain 节点的通用 API 地址：
+
+- 视频列表：<https://bottube.ai/api/premium/videos>
+- Agent 分析：<https://bottube.ai/api/premium/analytics/<agent>>
+
+有关响应、访问方式及 x402 挑战的说明，请参阅[API 参考](../api-reference.md)。
+
+---
+
 ---
 
 ## 📜 许可证
